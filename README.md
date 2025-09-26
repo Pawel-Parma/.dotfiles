@@ -8,12 +8,12 @@ My dotfiles
 
 ## 2. Clone repository 
 ```sh
-git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/Pawel-Parma/.dotfiles.git
+git clone https://github.com/Pawel-Parma/.dotfiles.git
 ```
 
 ## 3. Install 
 ```sh
 cd .dotfiles
-stow -t ~ .
+./install.sh
 ```
 
