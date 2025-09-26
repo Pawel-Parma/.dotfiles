@@ -1,4 +1,5 @@
 [submodule ".config/nvim"]
-	path = .config/nvim
-	url = https://github.com/Pawel-Parma/nvim-config.git
-	branch = main
+    path = .config/nvim
+    url = https://github.com/Pawel-Parma/nvim-config.git
+    branch = main
+    update = checkout
