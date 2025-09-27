@@ -1,4 +1,3 @@
-git submodule update --init --recursive
-git submodule foreach 'git checkout main && git pull'
-stow -t ~ .
+sudo apt install tmux
+git clone --depth 1 https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm 
 

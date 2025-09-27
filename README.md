@@ -15,5 +15,6 @@ git clone https://github.com/Pawel-Parma/.dotfiles.git
 ```sh
 cd .dotfiles
 ./install.sh
+./symlink.sh
 ```
 

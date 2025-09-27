@@ -1,4 +1,6 @@
 .stow-local-ignore
+.git 
+.gitignore
 LICENSE
 README.md
 install.sh
