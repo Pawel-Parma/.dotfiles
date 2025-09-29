@@ -1,6 +1,8 @@
-.stow-local-ignore
 .git 
 .gitignore
+.gitmodules
+.stow-local-ignore
 LICENSE
 README.md
 install.sh
+symlink.sh
