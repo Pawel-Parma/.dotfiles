@@ -8,13 +8,17 @@ My dotfiles
 
 ## 2. Clone repository 
 ```sh
-git clone https://github.com/Pawel-Parma/.dotfiles.git
+git clone https://github.com/Pawel-Parma/.dotfiles.git ~/
 ```
 
 ## 3. Install 
+Symlink .dotfiles
 ```sh
-cd .dotfiles
-./install.sh
+cd ~/.dotfiles
 ./symlink.sh
-```
+``` 
 
+Install used packages
+```sh
+./install.sh
+```
