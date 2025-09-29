@@ -145,6 +145,7 @@ main() {
     update
 
     install ripgrep "14.1.0"
+    install fd-find "9.0.0-1"
     install nodejs "18.19.1"
     npm_install tree-sitter-cli "0.25.9" tree-sitter
     npm_install deno "2.5.1"
