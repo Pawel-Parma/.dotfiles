@@ -3,22 +3,20 @@ My dotfiles
 
 
 # Installation
-## 1. Install requirements:
-- [stow](https://www.gnu.org/savannah-checkouts/gnu/stow/stow.html)
-
-## 2. Clone repository 
+## 1. Clone repository 
 ```sh
 git clone https://github.com/Pawel-Parma/.dotfiles.git ~/
 ```
 
-## 3. Install 
-Symlink .dotfiles
+## 2. Install 
+Install required packages
+```sh
+./install.sh
+```
+
+Symlink .dotfiles 
 ```sh
 cd ~/.dotfiles
 ./symlink.sh
 ``` 
 
-Install used packages
-```sh
-./install.sh
-```
