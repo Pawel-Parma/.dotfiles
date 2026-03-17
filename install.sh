@@ -110,8 +110,6 @@ install() {
     apt_install fd-find
     apt_install texlive-full
     apt_install neovim
-
-    git_clone "https://github.com/tmux-plugins/tpm" "$HOME/.tmux/plugins/tpm"
     apt_install tmux
 
     apt_install golang-go
