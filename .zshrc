@@ -63,6 +63,19 @@ ta() {
     fi
 }
 
+ts() {
+    local target=$(tmux list-sessions |
+    sed -E 's/:.*$//' |
+    grep -v \"^"$(tmux display-message -p '#S')"\$\" |
+    fzf --reverse --ghost="Session name" --height=15 --border=rounded --border-label=" Open Tmux Session ")
+
+    if [[ -z "$target" ]]; then
+        return 0
+    fi
+
+    tmux attach -t "$target"
+}
+
 
 alias tl="tmux list-sessions"
 eval "$(zoxide init zsh)"
