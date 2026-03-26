@@ -54,28 +54,6 @@ npm_install() {
     _execute_install "npm install -g" "$1" "npm list -g --depth=0 '$1' | grep -oP '$1@\K[\d.]+'"
 }
 
-git_clone() {
-    if [ $# -ne 2 ]; then
-        echo "Error: $# arguments passed, clone requires 2 arguments" >&2
-        exit 3
-    fi
-    local repo="$1"
-    local target="$2"
-
-    if [ -d "$target" ]; then
-        # TODO: git pull
-        echo "$repo already in Skipping." $target.
-        return 0
-    fi
-
-    echo "Cloning $repo into $target"
-    git clone --depth 1 "$repo" "$target" >/dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to clone $repo" >&2
-        exit 6
-    fi
-}
-
 curl_install() {
     if [ $# -ne 1 ]; then
         echo "Error: $# arguments passed, clone requires 1 arguments" >&2
@@ -90,20 +68,18 @@ install() {
     apt_install stow
 
     apt_install zsh
-    apt_install fzf
+    # apt_install fzf TODO: this version is too old
     apt_install cloc
     apt_install tree
     apt_install fastfetch
-    # zoxide
-    # curl_install https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh
+    # curl_install https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh # zoxide
 
     apt_install nodejs
     apt_install npm
     npm_install tree-sitter-cli
     npm_install typescript
     npm_install deno
-    # deno
-    # curl_install https://deno.land/install.sh
+    npm_install pure-prompt
 
     apt_install unzip
     apt_install ripgrep
@@ -113,8 +89,6 @@ install() {
     apt_install tmux
 
     apt_install golang-go
-
-    # maybe gf2
 }
 
 main() {

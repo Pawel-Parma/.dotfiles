@@ -1,175 +1,178 @@
+# TODO: add .bashrc to .dotfiles
 export ZSH="$HOME/.oh-my-zsh"
-# TODO: refactor
-
 set -o ignoreeof
+typeset -U path
+
+setopt APPEND_HISTORY
+setopt HIST_REDUCE_BLANKS
+HISTSIZE=100000
+SAVEHIST=100000
+for i in {0..9}; do
+  bindkey -r "^[$i"
+done
+
+setopt PROMPT_SUBST
+ZSH_THEME=""
+autoload -U promptinit; promptinit
+# prompt pure # TODO: see https://github.com/sindresorhus/pure/issues/712
+zstyle :prompt:pure:path color cyan
+zstyle :prompt:pure:git:branch color "reset_color}on %f%F{magenta"
+zstyle :prompt:pure:prompt:success color magenta 
+source /usr/local/lib/node_modules/pure-prompt/async.zsh
+source /usr/local/lib/node_modules/pure-prompt/pure.zsh
+PROMPT='%{$fg[green]%}%n@%m%{$reset_color%} '$PROMPT
+__pure_first_prompt=1
+print() {
+    if [[ $# -eq 0 && "${funcstack[-1]}" == "prompt_pure_precmd" && $__pure_first_prompt -eq 1 ]]; then
+        __pure_first_prompt=0
+        return
+    fi
+    builtin print "$@"
+}
+alias clear="__pure_first_prompt=1;command clear"
+
+add_to_path() {
+    if [[ $# -ne 1 ]]; then 
+        echo "add_to_path expects 1 argument, $# provided"
+        return 1;
+    fi
+    if [[ ":$PATH:" != *":$1:"* ]]; then
+     export PATH="$1:$PATH"
+    fi
+
+}
+add_to_path "$HOME/.local/bin"
+add_to_path "/usr/local/bin"
+export ZLS_PATH="/home/powna/install/zls/zls"
+
+export EDITOR='nvim'
+
+alias ga="git add"
+alias gd="git diff"
+alias gp="git push"
+alias gpu="git pull"
+alias gcl="git clone"
+alias gs="git status"
+alias gb="git branch"
+alias gc="git commit"
+alias gw="git worktree"
+
+alias python="python3"
+math() {
+    python -c "from math import *; print(eval('$*'))"
+}
+
+TMUX_PROJECTS_FILE="$HOME/.tmux_projects"
+alias tk="tmux kill-session"
+alias tl="tmux list-sessions"
+alias ta="tmux attach"
+tn() {
+    tmux new-session -s "$(echo $(basename $PWD) | sed 's/\.//g')"
+}
+ts() {
+    local session_count=$(tmux list-sessions | wc -l) 
+    if [[ $session_count -eq 1 ]]; then
+        tmux attach
+        return 0
+    fi 
+    
+    local target=$(tmux list-sessions | 
+        sed -E 's/:.*$//' |
+        grep -v \"^"$(tmux display-message -p '#S')"\$\" |
+        fzf --reverse --ghost="Session name" --height=15 \
+        --border=rounded --border-label=" Open Tmux Session " \
+        --preview 'tmux list-windows -t {} -F "#I:#W:#{?window_active,active,}" | 
+            awk -F: "{
+                if (\$3 == \"active\") 
+                    printf \"\033[1;32m%s: %s (active)\033[0m\n\", \$1, \$2; 
+                else 
+                    printf \"\033[36m%s\033[0m: %s\n\", \$1, \$2}"')
+
+    if [[ -z "$target" ]]; then
+        return 0
+    fi
+
+    if [[ -n "$TMUX" ]]; then
+        tmux switch-client -t "$target"
+    else
+        tmux attach -t "$target"
+    fi
+}
+tp() {
+    if [[ ! -f "$TMUX_PROJECTS_FILE" ]]; then
+        echo "No projects in $TMUX_PROJECTS_FILE. Use 'tpadd <dir>' first."
+        return 1
+    fi
+
+    local lines=("${(@f)$(<"$TMUX_PROJECTS_FILE")}")
+    local max_len=0
+    for line in $lines; do
+        local s_name=$(basename "$line" | sed 's/\.//g')
+        if (( ${#s_name} > max_len )); then
+            max_len=${#s_name}
+        fi
+    done
+
+    local display=$( for line in $lines; do
+        local s_name=$(basename "$line" | sed 's/\.//g')
+        printf "%-${max_len}s  │  %s\n" "$s_name" "$line"
+    done)
+
+    local selection=$(fzf --reverse --height=15 --border=rounded \
+        --border-label="Select Project" \
+        --delimiter '  │  ' \
+        --preview 'ls -CF --color=always {2}' <<<"$display")
+
+    if [[ -z "$selection" ]]; then
+        return 0
+    fi
+    local selected_path=$(echo "$selection" | awk -F '  │  ' '{print $2}' | xargs)
+
+    local name=$(basename "$selected_path" | sed 's/\.//g')
+    if ! tmux has-session -t "$name" 2>/dev/null; then
+        tmux new-session -d -s "$name" -c "$selected_path"
+    fi
+
+    if [[ -n "$TMUX" ]]; then
+        tmux switch-client -t "$name"
+    else
+        tmux attach -t "$name"
+    fi
+}
+tpadd() {
+    if [[ $# -gt 1 ]]; then 
+        echo "tpadd expects 0 or 1 arguments, $# provided"
+        return 1;
+    fi
+    local target=$(realpath "${1:-$PWD}")
+    if [[ ! -d "$target" ]]; then
+        echo "Error: $target is not a valid directory."
+        return 1
+    fi
+
+    touch "$TMUX_PROJECTS_FILE"
+
+    if grep -Fxq "$target" "$TMUX_PROJECTS_FILE"; then
+        echo "Project already in list."
+    else
+        echo "$target" >> "$TMUX_PROJECTS_FILE"
+        echo "Added $target"
+    fi
+}
+
+eval "$(zoxide init zsh)"
+alias cd="z"
+alias cdi="zi"
+
 export FZF_DEFAULT_OPTS=" \
 --color=spinner:#F5E0DC,hl:#F38BA8 \
 --color=fg:#CDD6F4,header:#F38BA8,info:#CBA6F7,pointer:#F5E0DC \
 --color=marker:#B4BEFE,fg+:#CDD6F4,prompt:#CBA6F7,hl+:#F38BA8 \
 --color=border:#6C7086,label:#CDD6F4"
 
-setopt PROMPT_SUBST
-git_branch() {
-  branch=$(git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --exact-match 2>/dev/null)
-  if [[ -z $branch ]]; then
-    branch=$(git rev-parse --short HEAD 2>/dev/null)
-  fi
-  if [[ -n $branch ]]; then
-      echo "on %{$fg[magenta]%}$branch%{$reset_color%}"
-  fi
-}
-
-PROMPT='%{$fg[green]%}%n@%m%{$reset_color%} \
-%{$fg[cyan]%}%~%{$reset_color%} $(git_branch)
-%{$fg[magenta]%}❯%{$reset_color%} '
-
-. "$HOME/.cargo/env"
-export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
-export PATH="$HOME/install/zig/zig-x86_64-linux-0.16.0-dev.368+2a97e0af6:$PATH"
-export PATH="$HOME/install/zls:$PATH"
-export PATH="$HOME/.local/bin:$PATH"
-export ZLS_PATH="/home/powna/install/zls/zls"
-HISTSIZE=100000
-HISTFILESIZE=200000
-alias ga="git add"
-alias gd="git diff"
-alias gc="git commit"
-alias gcl="git clone"
-alias gs="git status"
-alias gp="git push"
-alias gpu="git pull"
-alias gw="git worktree"
-
-alias python="python3"
-
-alias perf='/usr/lib/linux-tools-6.8.0-90/perf'
-export PERF_='/usr/lib/linux-tools-6.8.0-90/perf'
-
-tn() {
-    tmux new-session -s "$(echo $(basename $PWD) | sed 's/\.//g')"
-}
-
-ta() {
-    if [[ -n $1 ]]; then
-        tmux attach -t "$1"
-        return
-    fi
-
-    local name="$(basename "$PWD" | sed 's/\.//g')"
-    if tmux has-session -t "$name" 2>/dev/null; then
-        tmux attach -t "$name"
-    else
-        tmux attach
-    fi
-}
-
-ts() {
-    local target=$(tmux list-sessions |
-    sed -E 's/:.*$//' |
-    grep -v \"^"$(tmux display-message -p '#S')"\$\" |
-    fzf --reverse --ghost="Session name" --height=15 --border=rounded --border-label=" Open Tmux Session ")
-
-    if [[ -z "$target" ]]; then
-        return 0
-    fi
-
-    tmux attach -t "$target"
-}
-
-
-alias tl="tmux list-sessions"
-eval "$(zoxide init zsh)"
-alias cd="z"
-alias cdi="zi"
-
-math() {
-    python3 -c "from math import *; print(eval('$*'))"
-}
-
-
-# Uncomment the following line to use hyphen-insensitive completion.
-# Case-sensitive completion must be off. _ and - will be interchangeable.
-# HYPHEN_INSENSITIVE="true"
-
-# Uncomment one of the following lines to change the auto-update behavior
-# zstyle ':omz:update' mode disabled  # disable automatic updates
-# zstyle ':omz:update' mode auto      # update automatically without asking
-# zstyle ':omz:update' mode reminder  # just remind me to update when it's time
-
-# Uncomment the following line to change how often to auto-update (in days).
-# zstyle ':omz:update' frequency 13
-
-# Uncomment the following line if pasting URLs and other text is messed up.
-# DISABLE_MAGIC_FUNCTIONS="true"
-
-# Uncomment the following line to disable colors in ls.
-# DISABLE_LS_COLORS="true"
-
-# Uncomment the following line to disable auto-setting terminal title.
-# DISABLE_AUTO_TITLE="true"
-
-# Uncomment the following line to enable command auto-correction.
-# ENABLE_CORRECTION="true"
-
-# Uncomment the following line to display red dots whilst waiting for completion.
-# You can also set it to another string to have that shown instead of the default red dots.
-# e.g. COMPLETION_WAITING_DOTS="%F{yellow}waiting...%f"
-# Caution: this setting can cause issues with multiline prompts in zsh < 5.7.1 (see #5765)
-# COMPLETION_WAITING_DOTS="true"
-
-# Uncomment the following line if you want to disable marking untracked files
-# under VCS as dirty. This makes repository status check for large repositories
-# much, much faster.
-# DISABLE_UNTRACKED_FILES_DIRTY="true"
-
-# Uncomment the following line if you want to change the command execution time
-# stamp shown in the history command output.
-# You can set one of the optional three formats:
-# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
-# or set a custom format using the strftime function format specifications,
-# see 'man strftime' for details.
-# HIST_STAMPS="mm/dd/yyyy"
-
-# Would you like to use another custom folder than $ZSH/custom?
-# ZSH_CUSTOM=/path/to/new-custom-folder
-
-# Which plugins would you like to load?
-# Standard plugins can be found in $ZSH/plugins/
-# Custom plugins may be added to $ZSH_CUSTOM/plugins/
-# Example format: plugins=(rails git textmate ruby lighthouse)
-# Add wisely, as too many plugins slow down shell startup.
 plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
-
-# User configuration
-
-# export MANPATH="/usr/local/man:$MANPATH"
-
-# You may need to manually set your language environment
-# export LANG=en_US.UTF-8
-
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='nvim'
-# fi
-
-# Compilation flags
-# export ARCHFLAGS="-arch $(uname -m)"
-
-# Set personal aliases, overriding those provided by Oh My Zsh libs,
-# plugins, and themes. Aliases can be placed here, though Oh My Zsh
-# users are encouraged to define aliases within a top-level file in
-# the $ZSH_CUSTOM folder, with .zsh extension. Examples:
-# - $ZSH_CUSTOM/aliases.zsh
-# - $ZSH_CUSTOM/macos.zsh
-# For a full list of active aliases, run `alias`.
-#
-# Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
 . "/home/powna/.deno/env"
-
+. "$HOME/.cargo/env"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
