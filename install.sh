@@ -80,6 +80,7 @@ install() {
     npm_install typescript
     npm_install deno
     npm_install pure-prompt
+    npm_install diff-so-fancy
 
     apt_install unzip
     apt_install ripgrep

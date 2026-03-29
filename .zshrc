@@ -44,16 +44,22 @@ add_to_path() {
 add_to_path "$HOME/.local/bin"
 add_to_path "/usr/local/bin"
 export ZLS_PATH="/home/powna/install/zls/zls"
-
 export EDITOR='nvim'
+export PAGER='less -FR'
 
-alias ga="git add"
-alias gd="git diff"
-alias gp="git push"
+plugins=(git)
+source $ZSH/oh-my-zsh.sh
+
+alias gl="git log --all --graph --pretty=format:'%C(green)%h %C(white) %an %ar%C(auto) %D%n%s%n'" 
+alias ga="git add" 
+alias gap="git add --patch" 
+alias gd="git diff" 
+alias gds="git diff --staged" 
+alias gp="git push" 
 alias gpu="git pull"
-alias gcl="git clone"
-alias gs="git status"
-alias gb="git branch"
+alias gcl="git clone" 
+alias gs="git status" 
+alias gb="git branch" 
 alias gc="git commit"
 alias gw="git worktree"
 
@@ -170,9 +176,6 @@ export FZF_DEFAULT_OPTS=" \
 --color=marker:#B4BEFE,fg+:#CDD6F4,prompt:#CBA6F7,hl+:#F38BA8 \
 --color=border:#6C7086,label:#CDD6F4"
 
-plugins=(git)
-
-source $ZSH/oh-my-zsh.sh
 . "/home/powna/.deno/env"
 . "$HOME/.cargo/env"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

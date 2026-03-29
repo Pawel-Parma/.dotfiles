@@ -1,0 +1,59 @@
+[user]
+    email = 122152230+Pawel-Parma@users.noreply.github.com
+    name = Pawel-Parma
+
+[credential]
+    helper = store
+
+[core]
+    whitespace = error
+    preloadindex = true
+
+[init]
+    defaultBranch = main
+
+[status]
+    short = true
+    branch = true
+    showStash = true
+    showUntrackedFiles = all
+
+[commit]
+    template = ~/.config/git/template
+    verbose = true
+
+[diff]
+    context = 3
+    renames = copies
+    
+[push]
+    default = current
+
+[pull]
+    default = current
+
+[rebase]
+    missingCommitsCheck = warn
+
+[log]
+    graphColors = blue,yellow,cyan,magenta,green,red
+
+[pager]
+    diff = diff-so-fancy | $PAGER
+
+[color "diff"]
+    meta = black bold
+    frag = blue
+
+[interactive]
+    diffFilter = diff-so-fancy --patch
+
+[advice]
+    statusHints = false
+
+[url "git@github.com:"]
+    insteadOf = "gh:"
+
+[url "git@github.com:Pawel-Parma/"]
+    insteadOf = "me:"
+
