@@ -13,13 +13,12 @@ done
 
 setopt PROMPT_SUBST
 ZSH_THEME=""
+fpath+=("$(npm root -g)/pure-prompt/functions")
 autoload -U promptinit; promptinit
-# prompt pure # TODO: see https://github.com/sindresorhus/pure/issues/712
+prompt pure # TODO: see https://github.com/sindresorhus/pure/issues/712
 zstyle :prompt:pure:path color cyan
 zstyle :prompt:pure:git:branch color "reset_color}on %f%F{magenta"
 zstyle :prompt:pure:prompt:success color magenta 
-source /usr/local/lib/node_modules/pure-prompt/async.zsh
-source /usr/local/lib/node_modules/pure-prompt/pure.zsh
 PROMPT='%{$fg[green]%}%n@%m%{$reset_color%} '$PROMPT
 __pure_first_prompt=1
 print() {
@@ -39,13 +38,13 @@ add_to_path() {
     if [[ ":$PATH:" != *":$1:"* ]]; then
      export PATH="$1:$PATH"
     fi
-
 }
 add_to_path "$HOME/.local/bin"
 add_to_path "/usr/local/bin"
 export ZLS_PATH="/home/powna/install/zls/zls"
 export EDITOR='nvim'
 export PAGER='less -FR'
+export GPG_TTY=$(tty)
 
 plugins=(git)
 source $ZSH/oh-my-zsh.sh
@@ -58,9 +57,11 @@ alias gds="git diff --staged"
 alias gp="git push" 
 alias gpu="git pull"
 alias gcl="git clone" 
-alias gs='$HOME/.config/git/gjoin.py "$(git -c color.status=always status)" "$(git diff --stat --color=always)"' 
-alias gsb="git status" 
+alias gs='$HOME/.config/git/gjoin.py "$(git -c color.status=always status)" "$(git diff --stat --color=always --stat-name-width=0 --stat-width=999)"' 
+alias gsr="git status" 
 alias gb="git branch" 
+alias gsw="git switch" 
+alias gf="git fetch" 
 alias gc="git commit"
 alias gw="git worktree"
 
@@ -71,16 +72,25 @@ math() {
 
 TMUX_PROJECTS_FILE="$HOME/.tmux_projects"
 alias tk="tmux kill-session"
+alias tks="tmux kill-server"
 alias tl="tmux list-sessions"
 alias ta="tmux attach"
 tn() {
     tmux new-session -s "$(echo $(basename $PWD) | sed 's/\.//g')"
 }
 ts() {
+    if ! tmux info &> /dev/null; then
+        tp
+        return $?
+    fi
+
     local session_count=$(tmux list-sessions | wc -l) 
     if [[ $session_count -eq 1 ]]; then
-        tmux attach
-        return 0
+        if [[ -z "$TMUX" ]]; then
+            tmux attach
+            return 0
+        fi
+        return 1
     fi 
     
     local target=$(tmux list-sessions | 
@@ -180,3 +190,7 @@ export FZF_DEFAULT_OPTS=" \
 . "/home/powna/.deno/env"
 . "$HOME/.cargo/env"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

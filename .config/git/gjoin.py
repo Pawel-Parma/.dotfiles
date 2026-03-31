@@ -1,30 +1,44 @@
 #!/usr/bin/python3
 import sys
 
-GREEN = "\033[32m"
-RED = "\033[31m"
-BLUE    = "\033[34m"
-MAGENTA = "\033[35m"
-RESET = "\033[0m"
+R = RED = "\033[31m"
+G = GREEN = "\033[32m"
+Y = YELLOW = "\033[33m"
+B = BLUE = "\033[34m"
+M = MAGENTA = "\033[35m"
+RE = RESET = "\033[0m"
 
-def main():
-    if len(sys.argv) < 3:
-        print("Usage: ./gjoin.py \"$(git -c color.status=always status -sb)\" \"$(git diff --stat --color=always)\"")
-        return
+INFO_MSG = f"\n{B}{{}}{RE} files changed, {Y}{{}}{RE} files untracked, {G}{{}}{RE} insertions({G}+{RE}), {R}{{}}{RE} deletions({R}-{RE}), {M}{{}}{RE} changes"
+
+
+def main(status: list[str], diff: list[str]):
+    untracked = len(status) - len(diff[:-1]) - 1
+    changed = 0
+    insertions = 0
+    deletions = 0
+
+    output: list[str] = [status[0]]
+    if len(diff) != 0:
+        for i in range(len(diff) - 1):
+            file_track = status[i + 1]
+            file_status = diff[i][diff[i][1:].index(" ") + 1:]
+            output.append(file_track + file_status)
+
+        changed, insertions, deletions = [int(s) for s in diff[-1][1:].split() if s.isdigit()]
+
+    output.extend(status[len(diff[:-1]) + 1:])
+    msg = INFO_MSG.format(changed, untracked, insertions, deletions, insertions + deletions)
+    output.append(msg)
+
+    print("\n".join(output))
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: ./gjoin.py \"$(git -c color.status=always status -sb)\" \"$(git diff --stat --color=always --stat-name-width=0 --stat-width=999)\"")
+        exit()
 
     status = sys.argv[1].splitlines()
     diff= sys.argv[2].splitlines()
-    output = status[0] + "\n"
+    main(status, diff)
 
-    for i in range(len(diff) - 1):
-        output += status[i + 1]
-        output += diff[i][diff[i][1:].index(" ") + 1:] + "\n"
-
-    output += "\n".join(status[len(diff):]) + "\n"
-
-    f, i, d = [int(s) for s in diff[-1][1:].split() if s.isdigit()]
-    output += f"\n{BLUE}{f}{RESET} files changed, {GREEN}{i}{RESET} insertions({GREEN}+{RESET}), {RED}{d}{RESET} deletions({RED}-{RESET}), {MAGENTA}{i + d}{RESET} changes"
-    print(output)
-
-if __name__ == "__main__":
-    main()
