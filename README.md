@@ -1,6 +1,4 @@
-# Dotfiles
-My dotfiles
-
+# My Dotfiles
 
 # Installation
 ## 1. Clone repository 
