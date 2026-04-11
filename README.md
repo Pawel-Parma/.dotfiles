@@ -6,17 +6,17 @@ My dotfiles
 ## 1. Clone repository 
 ```sh
 git clone https://github.com/Pawel-Parma/.dotfiles.git ~/
+cd ~/.dotfiles
+git submodule update --init --recursive
 ```
 
-## 2. Install 
-Install required packages
+## 2. Install required packages
 ```sh
 ./install.sh
 ```
 
-Symlink .dotfiles 
+## 3. Symlink .dotfiles 
 ```sh
-cd ~/.dotfiles
 ./symlink.sh
 ``` 
 

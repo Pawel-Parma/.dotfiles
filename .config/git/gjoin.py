@@ -17,6 +17,7 @@ def main(status: list[str], diff: list[str]):
     insertions = 0
     deletions = 0
 
+    # TODO: add matching from diff to status, as gitmodules break the script
     output: list[str] = [status[0]]
     if len(diff) != 0:
         for i in range(len(diff) - 1):
@@ -24,7 +25,7 @@ def main(status: list[str], diff: list[str]):
             file_status = diff[i][diff[i][1:].index(" ") + 1:]
             output.append(file_track + file_status)
 
-        changed, insertions, deletions = [int(s) for s in diff[-1][1:].split() if s.isdigit()]
+        changed, insertions, deletions, *_ = [int(s) for s in diff[-1][1:].split() if s.isdigit()] + [0] * 3
 
     output.extend(status[len(diff[:-1]) + 1:])
     msg = INFO_MSG.format(changed, untracked, insertions, deletions, insertions + deletions)
@@ -35,7 +36,7 @@ def main(status: list[str], diff: list[str]):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: ./gjoin.py \"$(git -c color.status=always status -sb)\" \"$(git diff --stat --color=always --stat-name-width=0 --stat-width=999)\"")
+        print("Usage: ./gjoin.py \"$(git status)\" \"$(git diff)\"")
         exit()
 
     status = sys.argv[1].splitlines()

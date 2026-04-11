@@ -1,0 +1,20 @@
+add_newline = false
+
+[username]
+show_always = true
+format = "[$user]($style)"
+style_user = "green"
+
+[hostname]
+ssh_only = false
+format = "[@$hostname]($style) "
+style = "green"
+
+[directory]
+truncation_length = 0
+truncate_to_repo = true
+
+[character]
+success_symbol = "[❯](purple)"
+error_symbol = "[❯](red)"
+

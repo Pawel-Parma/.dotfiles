@@ -68,18 +68,19 @@ install() {
     apt_install stow
 
     apt_install zsh
-    # apt_install fzf TODO: this version is too old
+    # apt_install fzf TODO: this version is too old on ubuntu
     apt_install cloc
     apt_install tree
     apt_install fastfetch
     # curl_install https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh # zoxide
+    # curl -sS https://starship.rs/install.sh | sh # starship
+    # curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash # nvm
 
     apt_install nodejs
     apt_install npm
     npm_install tree-sitter-cli
     npm_install typescript
     npm_install deno
-    npm_install pure-prompt
     npm_install diff-so-fancy
 
     apt_install unzip
@@ -93,8 +94,8 @@ install() {
 }
 
 main() {
-    update
     check
+    update
     install
     finish
 }
