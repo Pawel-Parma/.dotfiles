@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-TMUX_PROJECTS_FILE="$HOME/.tmux_projects"
+TMUX_PROJECTS_FILE="$HOME/.tmux/projects"
 TMUX_PREVIEW_CMD='
 if tmux has-session -t {1} 2>/dev/null; then
     tmux list-windows -t {1} -F "#I:#W:#{?window_active,active,}" |
@@ -38,7 +38,7 @@ projects=$(awk "$TMUX_PROCESS_PROJECTS" "$TMUX_PROJECTS_FILE")
 selection=$(echo "$projects" | grep -v "^$(tmux display -p '#S')" |
     fzf --reverse --height=15 --ghost="Session name" \
         --border-label=" Open Tmux Session " --border=rounded \
-    --delimiter '  │  ' --preview "$TMUX_PREVIEW_CMD" | if [[ -z "$selection"]])
+    --delimiter '  │  ' --preview "$TMUX_PREVIEW_CMD")
 if [[ -z "$selection" ]]; then
     exit
 fi

@@ -1,4 +1,4 @@
-TMUX_PROJECTS_FILE="$HOME/.tmux_projects"
+TMUX_PROJECTS_FILE="$HOME/.tmux/projects"
 TMUX_PREVIEW_CMD='
 if tmux has-session -t {1} 2>/dev/null; then
     tmux list-windows -t {1} -F "#I:#W:#{?window_active,active,}" |
@@ -28,20 +28,19 @@ TMUX_PROCESS_PROJECTS='{
     }
 }'
 
-alias tk="tmux kill-session"
-alias tks="tmux kill-server"
-alias tl="tmux ls"
-alias tpa="tpadd"
-
 tget_name() {
     basename $1 | sed 's/\.//g'
 }
 
 tselect() {
-    printf "%s\n" "$@" |
+    if [[ -n "$2" ]]; then
+        printf "%s\n" "$1" | fzf --delimiter '  │  ' --filter="$1"  | head -n 1
+        return
+    fi
+
+    printf "%s\n" "$1" |
     if [[ -n "$TMUX" ]]; then
-        local current_session="$(tmux display -p '#S')"
-        grep -v "^${current_session}"
+        grep -v "^$(tmux display -p '#S')"
     else
         cat
     fi |
@@ -50,23 +49,63 @@ tselect() {
         --delimiter '  │  ' --preview "$TMUX_PREVIEW_CMD"
 }
 
+tls() {
+    tmux list-sessions -F "#{?session_attached,attached,detached}|#{session_name}" |
+    while IFS="|" read -r s_status name; do
+        if [[ "$s_status" == "attached" ]]; then
+            printf "\e[32m● attached \e[0m"
+        else
+            printf "\e[90m○ detached \e[0m"
+        fi
+        printf "\e[1;36m%-15s\e[0m\n" "$name"
+    done
+}
+
+tlp() {
+    touch "$TMUX_PROJECTS_FILE"
+    local yellow=$'\e[37m'
+    local blue=$'\e[34;1m'
+    local reset=$'\e[0m'
+    while read -r full_path; do
+        local parent="$(dirname "$full_path")/"
+        local base="$(basename "$full_path")"
+        local color_base=$(echo "$base" | sed "s/\./${yellow}.${blue}/g")
+        printf "${yellow}%s${blue}%s${reset}\n" "$parent" "$color_base"
+    done < "$TMUX_PROJECTS_FILE"
+}
+
+tks() {
+    tmux kill-server
+}
+
+tk() {
+    local projects="$(tmux ls -f "#s")"
+    local selection="$(tselect "$projects" "$1")"
+    if [[ -z "$selection" ]]; then
+        return 0
+    fi
+
+    tmux kill-session "$selection"
+}
+
 ta() {
     if [[ -n "$TMUX" ]]; then
-        tmux switchc -t "$1"
+        tmux switchc ${1:+ -t "$1"}
     else
-        tmux attach -t "$1"
+        tmux attach ${1:+ -t "$1"}
     fi
     return $?
 }
 
 tn() {
-    tmux new -s "$(tget_name "$PWD")"
+    local dpath="${1:-$PWD}"
+    tmux new -s "$(tget_name "$dpath")" -c "$dpath"
     return $?
 }
 
 ts() {
     if ! tmux has 2> /dev/null; then
-        tp
+        tp "$1"
         return $?
     fi
     if [[ $(tmux ls | wc -l) -eq 1 ]]; then
@@ -74,7 +113,8 @@ ts() {
         return $?
     fi
 
-    local selection=$(tselect $(tmux ls -F "#S"))
+    local projects="$(tmux ls -f "#s")"
+    local selection="$(tselect "$projects" "$1")"
     if [[ -z "$selection" ]]; then
         return 0
     fi
@@ -89,17 +129,16 @@ tp() {
         return 1
     fi
 
-    local projects=$(awk "$TMUX_PROCESS_PROJECTS" "$TMUX_PROJECTS_FILE")
-    local selection=$(tselect "$projects")
+    local projects="$(awk "$TMUX_PROCESS_PROJECTS" "$TMUX_PROJECTS_FILE")"
+    local selection="$(tselect "$projects" "$1")"
     if [[ -z "$selection" ]]; then
         return 0
     fi
 
-    local selected_path=$(echo "$selection" | awk -F '  │  ' '{print $2}' | xargs)
-    local name=$(tget_name "$selected_path")
-
+    local dpath=$(echo "$selection" | awk -F '  │  ' '{print $2}' | xargs)
+    local name=$(tget_name "$dpath")
     if ! tmux has -t "$name" 2>/dev/null; then
-        tmux new -d -s "$name" -c "$selected_path"
+        tmux new -d -s "$name" -c "$dpath"
     fi
 
     ta "$name"
@@ -127,3 +166,34 @@ tpadd() {
     fi
 }
 
+tpremove() {
+    if [[ ! -f "$TMUX_PROJECTS_FILE" ]]; then
+        echo "No projects in $TMUX_PROJECTS_FILE. Use 'tpadd <dir>' first."
+        return 1
+    fi
+
+    local projects="$(awk "$TMUX_PROCESS_PROJECTS" "$TMUX_PROJECTS_FILE")"
+    local selection="$(tselect "$projects" "$1")"
+    if [[ -z "$selection" ]]; then
+        return 0
+    fi
+
+    local dpath=$(echo "$selection" | awk -F '  │  ' '{print $2}' | xargs)
+    grep -vxF "$dpath" "$TMUX_PROJECTS_FILE" > "${TMUX_PROJECTS_FILE}.remove.tmp"
+    mv "$TMUX_PROJECTS_FILE" "${TMUX_PROJECTS_FILE}.remove.old"
+    mv "${TMUX_PROJECTS_FILE}.remove.tmp" "$TMUX_PROJECTS_FILE"
+}
+
+tpclean() {
+    touch "$TMUX_PROJECTS_FILE"
+    touch "${TMUX_PROJECTS_FILE}.clean.tmp"
+    while read -r dpath; do
+        if [[ -d "$dpath" ]]; then
+            echo "$dpath" >> "${TMUX_PROJECTS_FILE}.clean.tmp";
+        else
+            echo "Removed: $dpath"
+        fi
+    done < "$TMUX_PROJECTS_FILE"
+    mv "$TMUX_PROJECTS_FILE" "${TMUX_PROJECTS_FILE}.clean.old"
+    mv "${TMUX_PROJECTS_FILE}.clean.tmp" "$TMUX_PROJECTS_FILE"
+}
