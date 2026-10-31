@@ -7,7 +7,15 @@ alias gp="git push"
 alias gpu="git pull"
 alias gcl="git clone"
 gs() {
-    local gstatus="$(git -c color.status=always status)"
+    local gstatus;
+    gstatus="$(git -c color.status=always status 2>/dev/null)"
+    local status_err=$?
+    if [[ status_err -ne 0 ]]; then
+        local R=$'\033[31m'
+        local RE=$'\033[0m'
+        echo "${R}fatal:${RE} not a git repository"
+        return status_err
+    fi
     local gwidth=$(( $(tput cols) < 120 ? $(tput cols) - 1 : 120 ))
     local gdiff="$(git diff --stat --color=always --stat-width="$gwidth")"
     $HOME/.config/git/gjoin.py "$gstatus" "$gdiff"

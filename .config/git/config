@@ -1,7 +1,7 @@
 [user]
     email = 122152230+Pawel-Parma@users.noreply.github.com
     name = Pawel-Parma
-    signingkey = 07E7DC96070F461569C04DFA7169E8D071DAF8E7
+    signingkey = 450A80378A283BE36B6E97FBCB90DDC862FBC79D
 
 [credential]
     helper = store

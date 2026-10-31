@@ -75,11 +75,20 @@ tlp() {
 }
 
 tks() {
+    if ! tmux has 2> /dev/null; then
+        echo "No server active"
+        return
+    fi
     tmux kill-server
 }
 
 tk() {
-    local projects="$(tmux ls -f "#s")"
+    local projects
+    projects="$(tmux ls -f "#s" 2>/dev/null)"
+    if [[ $? -ne 0 ]]; then
+        echo "No sessions active"
+        return 0
+    fi
     local selection="$(tselect "$projects" "$1")"
     if [[ -z "$selection" ]]; then
         return 0
@@ -89,10 +98,18 @@ tk() {
 }
 
 ta() {
+    if [[ -z "$1" ]]; then
+        if [[ -n "$TMUX" ]]; then
+            tmux switchc
+        else
+            tmux attach
+        fi
+    fi
+
     if [[ -n "$TMUX" ]]; then
-        tmux switchc ${1:+ -t "$1"}
+        tmux switchc -t "$1"
     else
-        tmux attach ${1:+ -t "$1"}
+        tmux attach -t "$1"
     fi
     return $?
 }
@@ -113,7 +130,7 @@ ts() {
         return $?
     fi
 
-    local projects="$(tmux ls -f "#s")"
+    local projects="$(tmux ls -F "#{session_name}")"
     local selection="$(tselect "$projects" "$1")"
     if [[ -z "$selection" ]]; then
         return 0
@@ -143,6 +160,15 @@ tp() {
 
     ta "$name"
     return $?
+}
+
+tpls() {
+    if [[ ! -f "$TMUX_PROJECTS_FILE" ]]; then
+        echo "No projects in $TMUX_PROJECTS_FILE. Use 'tpadd <dir>' first."
+        return 1
+    fi
+
+    cat "$TMUX_PROJECTS_FILE"
 }
 
 tpadd() {

@@ -4,7 +4,6 @@ path_add() {
     fi
 }
 
-export ZLS_PATH="$HOME/install/zls/zls"
 export FZF_PATH="$HOME/install/fzf/bin"
 export EDITOR='nvim'
 export PAGER='less -FR'
@@ -12,6 +11,7 @@ export GPG_TTY=$(tty)
 path_add "$HOME/.local/bin"
 path_add "/usr/local/bin"
 path_add "$FZF_PATH"
+path_add "$HOME/install/zig"
 path_add "$HOME/.deno/bin"
 path_add "$HOME/.cargo/bin"
 

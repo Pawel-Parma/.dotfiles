@@ -15,6 +15,7 @@ import() {
 
 import prompt.sh
 import path.sh
+import nvim.sh
 import git.sh
 import python.sh
 import tmux.sh

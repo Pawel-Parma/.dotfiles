@@ -1,6 +1,9 @@
 export ZSH="$HOME/.oh-my-zsh"
 source "$ZSH/oh-my-zsh.sh"
 
+# TODO:
+# Exit in non interactive mode
+
 set -o ignoreeof
 
 setopt APPEND_HISTORY
@@ -21,4 +24,12 @@ done
 if [[ -f "$HOME/.config/shell/common.sh" ]]; then
     source "$HOME/.config/shell/common.sh"
 fi
+
+# TODO:
+# CASE_SENSITIVE="false"
+# HYPHEN_INSENSITIVE="false"
+# plugins=(git)
+# plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
+# source $ZSH/oh-my-zsh.sh
+# ZSH_HIGHLIGHT_STYLES[command]='fg=yellow,bold'
 
